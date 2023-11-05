@@ -1,5 +1,8 @@
-{% extends "base.html" %}
+{% extends "bootstrap/base.html" %} <!-- ←bootstrap側のCSS等を読み込んでいる -->
+{% block title %}TOP Page{% endblock %}
+
 {% block content %}
+<div class="container">
     <h1>ブログ アプリケーション</h1>
     <a href="/create" role="button">新規作成画面</a>
     <a href="/logout" role="button">ログアウト</a>
@@ -12,4 +15,5 @@
         <p>{{ post.body}}</p>
     </article>
     {% endfor %}
+</div>    
 {% endblock %}

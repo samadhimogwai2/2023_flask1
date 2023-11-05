@@ -3,8 +3,7 @@ from flask import Flask
 from flask import render_template, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, LoginManager, login_user, logout_user, login_required
-# from flask_bootstrap import BOOTSTRAP_VERSION, Bootstrap
-
+from flask_bootstrap import BOOTSTRAP_VERSION, Bootstrap
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 
@@ -18,6 +17,8 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///blog.db"
 app.config["SECRET_KEY"] = os.urandom(24)
 # initialize the app with the extension
 db = SQLAlchemy(app)
+
+bootstrap = Bootstrap(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)

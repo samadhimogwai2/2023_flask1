@@ -1,14 +1,18 @@
-{% extends "base.html" %}
-{% block content %}
-<h1>ログイン画面</h1>
-<form method="POST">
-    <!-- ユーザ名を入力 -->
-    <label for="">ユーザ名</label>
-    <input type="text" name="username">
-    <!-- パスワードを入力 -->
-    <label for="">内容</label>
-    <input type="password" name="password">
-    <input type="submit" value="ログイン">
+{% extends "bootstrap/base.html" %}
+{% block title %}LOGIN Page{% endblock %}
 
-</form>
+{% block content %}
+<div class="container">
+    <h1>ログイン画面</h1>
+    <form method="POST">
+        <!-- ユーザ名を入力 -->
+        <label for="">ユーザ名</label>
+        <input type="text" name="username" class="form-control">
+        <!-- パスワードを入力 -->
+        <label for="">パスワード</label>
+        <input type="password" name="password" class="form-control">
+        <input type="submit" value="ログイン" class="btn btn-primary">
+
+    </form>
+</div>
 {% endblock %}
