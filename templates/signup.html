@@ -1,12 +1,35 @@
-signup.html
-{% extends "base.html" %}
+{% extends "bootstrap/base.html" %}
+{% block title %}SignUp Page{% endblock %}
+
 {% block content %}
-<h1>ユーザー登録</h1>
-<form method="POST">
-    <label for="">ユーザー名</label>
-    <input type="text" name="username">
-    <label for="">パスワード</label>
-    <input type="password" name="password">
-    <input type="submit" value="新規登録">
-</form>
+<div class="container">
+    <h1>ユーザ登録画面</h1>
+    <form action="" method="POST">
+        {{ form.hidden_tag() }}
+
+        <div style="margin: 10px;">
+            {{ form.username.label }}</br>
+            {% if form.username.errors %}
+            <span style="color: red;">{{ form.username.errors[0] }}</span></br>
+            {% endif %}
+            {% if message != "" %}
+            <span style="color: red;">{{ message }}</span></br>
+            {% endif %}
+            {{ form.username(placeholder="田中太郎") }}
+        </div>
+
+        <!-- パスワード -->
+        <div style="margin: 10px;" name="password">
+            {{ form.password.label }}</br>
+            {% if form.password.errors %}
+            <span style="color: red;">{{ form.password.errors[0] }}</span></br>
+            {% endif %}
+            {{ form.password(placeholder="4文字以上10文字以下") }}
+        </div>
+
+
+        <input style="margin: 10px;" type="submit" value="ユーザ登録" class="btn btn-primary">
+
+    </form>
+</div>
 {% endblock %}
