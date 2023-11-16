@@ -6,10 +6,8 @@ class BlogForm(FlaskForm):
     containt = TextAreaField('内容')
     
     def validate_title(self, title):
-
-        input_string = input_string.strip()
         
-        if input_string == '':
+        if title.data == '':
             raise ValidationError('タイトルを入力してください')
     
            

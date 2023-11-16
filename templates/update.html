@@ -2,13 +2,33 @@
 {% block content %}
 <h1>編集画面</h1>
 <form method="POST">
-    <!-- タイトルを入力 -->
-    <label for="title">タイトル</label>
-    <input type="text" name="title" value={{ post.title }} class="form-control">
-    <!-- 内容を入力 -->
-    <label for="body">内容</label>
-    <input type="text" name="body" value={{ post.body }} class="form-control">
-    <input type="submit" value="更新" class="btn btn-primary">
+    {{ form.hidden_tag() }}
 
+    <div class="form_title" style="margin: 10px;">
+        {{ form.title.label }}</br>
+        {% if form.title.errors %}
+        <span style="color: #f08080;">{{ form.title.errors[0] }}</span></br>
+        {% endif %}
+        {% if message != "" %}
+        <span style="color: lightcoral;">{{ message }}</span></br>
+        {% endif %}
+        {{ form.title(style='width: 1000px;')}}
+        
+    </div>
+
+    
+    <div style="margin: 10px;">
+        {{ form.containt.label }}</br>
+        {% if form.containt.errors %}
+        <span style="color: lightcoral;">{{ form.containt.errors[0] }}</span></br>
+        {% endif %}
+        {{ form.containt(style='height: 400px; width: 1000px;') }}
+    </div>
+
+    <input name="update" style="margin: 10px;" type="submit" value="更新" class="btn btn-primary">
+    <input name="back" style="margin: 10px;" type="submit" value="戻る" class="btn btn-primary">
 </form>
+
+
+</div>
 {% endblock %}

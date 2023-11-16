@@ -1,15 +1,15 @@
-from enum import unique
 from flask import Flask
 from flask import render_template, request, redirect
+from flask import session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, LoginManager, login_user, logout_user, login_required
-from flask_bootstrap import BOOTSTRAP_VERSION, Bootstrap
+from flask_bootstrap import Bootstrap
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
-from datetime import datetime
-import pytz
+from datetime import datetime, timezone
 from form import Form
 from blogform import BlogForm
+import pytz
 
 # create the app
 app = Flask(__name__)
@@ -25,12 +25,16 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 
+
 # db.Modelを継承してテーブルを定義
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(50), nullable=False)
     body = db.Column(db.String(300), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('Asia/Tokyo')))
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    
     
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -41,13 +45,26 @@ class User(UserMixin, db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# ユーザが登録したデータをDBから取得
+def get_posts_for_user(userid):
+    jst = pytz.timezone('Asia/Tokyo')
+    posts = Post.query.filter_by(created_by=userid).all()
+    
+    # 作成日時を日本時間に変換
+    for post in posts:            
+        post.created_at = post.created_at.replace(tzinfo=pytz.utc).astimezone(jst)
+        
+    return posts
+
 @app.route('/', methods=['GET', 'POST'])
 @login_required  #ログインしているユーザのみアクセス可能
 def index():
     if request.method == 'GET':
-        # 全てのデータを取得
-        posts = Post.query.all()
-
+        
+        # ユーザが登録したデータを取得
+        userid = session['userid']
+        posts = get_posts_for_user(userid)
+            
         return(render_template('index.html', posts=posts))
     
 @app.route('/signup', methods=['GET', 'POST'])
@@ -60,10 +77,12 @@ def signup():
             username = request.form.get('username')
             password = request.form.get('password')
             
+            # ユーザ存在チェック
             user = User.query.filter_by(username=username).first()
             if user != None :
                 return render_template('signup.html', form=form, message='入力したユーザ名は既に存在します')            
 
+            # DB登録
             user = User(username=username, password=generate_password_hash(password))
 
             db.session.add(user)
@@ -94,6 +113,10 @@ def login():
             # パスワードチェック
             if check_password_hash(user.password, password):
                 login_user(user)
+                
+                # useridをセッションに保存
+                session['userid'] = user.id
+                
                 return redirect('/')
             else:
                 return render_template('login.html', form=form, pswerr='パスワードが相違しています')
@@ -124,9 +147,10 @@ def create():
                 
                 title = request.form.get('title')
                 containt = request.form.get('containt')
-     
-                # DBに登録
-                post = Post(title=title, body=containt)
+                user_id = session['userid']
+                
+                # DB登録
+                post = Post(title=title, body=containt, created_by=user_id)
                 db.session.add(post)
                 db.session.commit()
 
@@ -149,16 +173,37 @@ def update(id):
     # データを取得
     post = Post.query.get(id)
     
+    blogform = BlogForm()
+    
     if request.method == 'GET':
-        return(render_template('update.html', post=post))
-    else:    
-        post.title = request.form.get('title')
-        post.body = request.form.get('body')
+        
+        # フォームに取得したタイトルと内容をセット
+        blogform.title.data = post.title
+        blogform.containt.data = post.body
+        
+        return(render_template('update.html', post=post, form=blogform))
+    else:
+        
+        if 'update' in request.form:
+        
+            if blogform.validate_on_submit():
+                post.title = request.form.get('title')
+                post.body = request.form.get('containt')
+                post.updated_at = datetime.now(timezone.utc)
 
-        # DBに反映
-        db.session.commit()
+                # DB更新
+                db.session.commit()
 
-        return redirect('/')
+                return redirect('/')
+            
+            else:
+                return(render_template('update.html',form=blogform))
+        
+        elif 'back' in request.form:
+              return redirect('/')  
+        else:
+            return(render_template('update.html',form=blogform))    
+            
 
 @app.route('/<int:id>/delete', methods=['GET'])
 @login_required  #ログインしているユーザのみアクセス可能
